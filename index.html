@@ -91,6 +91,7 @@
           <div class="data-row" style="color: orange;"><em>Dati orari non disponibili, mostrati dati giornalieri.</em></div>
         `;
       } else {
+        throw new Error(weatherData);
         throw new Error("Dati meteo non disponibili");
       }
 
