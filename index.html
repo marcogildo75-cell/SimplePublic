@@ -3,66 +3,107 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>To-Do List - Esercizio</title>
+<title>To-Do List Avanzata con Matrice di Eisenhower</title>
 <style>
   body {
     font-family: sans-serif;
-    max-width: 600px;
+    max-width: 900px;
     margin: auto;
     padding: 20px;
     background: #f5f5f7;
     color: #333;
   }
-  h1 {
+  h1, h2 {
     text-align: center;
     color: #007aff;
   }
-  #newTask {
-    width: 80%;
-    padding: 12px;
-    font-size: 18px;
+  .input-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  input[type=text], select {
+    padding: 10px;
+    font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 6px;
+    min-width: 150px;
   }
-  #addBtn {
-    padding: 12px 20px;
-    font-size: 18px;
+  button {
+    padding: 10px 18px;
+    font-size: 16px;
     color: white;
     background-color: #007aff;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    margin-left: 5px;
   }
-  #addBtn:hover {
+  button:hover {
     background-color: #005bb5;
+  }
+  #filter-row {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  select#filterCategory, select#filterPriority {
+    margin: 0 10px;
+  }
+  .matrix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+  }
+  .quadrant {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    min-height: 200px;
+  }
+  .quadrant h3 {
+    margin-top: 0;
+    color: #007aff;
+    border-bottom: 2px solid #007aff;
+    padding-bottom: 5px;
   }
   ul {
     list-style: none;
     padding: 0;
-    margin-top: 20px;
   }
   li {
-    background: white;
-    padding: 12px 15px;
-    margin-bottom: 10px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
     border-radius: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    cursor: pointer;
   }
   li.completed {
     text-decoration: line-through;
     color: #999;
+  }
+  li span.task-text {
+    flex-grow: 1;
+  }
+  .task-info {
+    font-size: 12px;
+    color: #555;
+    margin-left: 8px;
   }
   button.deleteBtn {
     background: #ff3b30;
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 6px 10px;
+    padding: 4px 8px;
     cursor: pointer;
+    margin-left: 10px;
+    flex-shrink: 0;
   }
   button.deleteBtn:hover {
     background: #cc2a22;
@@ -71,75 +112,191 @@
 </head>
 <body>
 
-<h1>To-Do List</h1>
+<h1>To-Do List Avanzata</h1>
 
-<input type="text" id="newTask" placeholder="Aggiungi nuova attività..." />
-<button id="addBtn">Aggiungi</button>
+<div class="input-row">
+  <input type="text" id="newTask" placeholder="Aggiungi nuova attività..." />
+  <select id="newCategory" title="Categoria">
+    <option value="Personale">Personale</option>
+    <option value="Lavoro">Lavoro</option>
+    <option value="Studio">Studio</option>
+    <option value="Altro">Altro</option>
+  </select>
+  <select id="newPriority" title="Priorità">
+    <option value="Alta">Alta</option>
+    <option value="Media" selected>Media</option>
+    <option value="Bassa">Bassa</option>
+  </select>
+  <select id="newUrgency" title="Urgenza">
+    <option value="Urgente">Urgente</option>
+    <option value="Non urgente" selected>Non urgente</option>
+  </select>
+  <select id="newImportance" title="Importanza">
+    <option value="Importante">Importante</option>
+    <option value="Non importante" selected>Non importante</option>
+  </select>
+  <button id="addBtn">Aggiungi</button>
+</div>
 
-<ul id="taskList"></ul>
+<div id="filter-row">
+  <label>Filtra per categoria:
+    <select id="filterCategory">
+      <option value="Tutte">Tutte</option>
+      <option value="Personale">Personale</option>
+      <option value="Lavoro">Lavoro</option>
+      <option value="Studio">Studio</option>
+      <option value="Altro">Altro</option>
+    </select>
+  </label>
+  <label>Filtra per priorità:
+    <select id="filterPriority">
+      <option value="Tutte">Tutte</option>
+      <option value="Alta">Alta</option>
+      <option value="Media">Media</option>
+      <option value="Bassa">Bassa</option>
+    </select>
+  </label>
+</div>
+
+<div class="matrix">
+  <div class="quadrant" id="q1">
+    <h3>Urgente & Importante</h3>
+    <ul></ul>
+  </div>
+  <div class="quadrant" id="q2">
+    <h3>Non Urgente & Importante</h3>
+    <ul></ul>
+  </div>
+  <div class="quadrant" id="q3">
+    <h3>Urgente & Non Importante</h3>
+    <ul></ul>
+  </div>
+  <div class="quadrant" id="q4">
+    <h3>Non Urgente & Non Importante</h3>
+    <ul></ul>
+  </div>
+</div>
 
 <script>
   const newTaskInput = document.getElementById('newTask');
   const addBtn = document.getElementById('addBtn');
-  const taskList = document.getElementById('taskList');
+  const filterCategory = document.getElementById('filterCategory');
+  const filterPriority = document.getElementById('filterPriority');
 
-  // Carica attività da localStorage
-  function loadTasks() {
-    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    tasks.forEach(task => addTaskToDOM(task.text, task.done));
-  }
+  const categories = ['Personale', 'Lavoro', 'Studio', 'Altro'];
+  const priorities = ['Alta', 'Media', 'Bassa'];
 
-  // Salva tutte le attività
+  // Carica attività da localStorage o inizializza lista
+  let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+  // Salva attività su localStorage
   function saveTasks() {
-    const tasks = [];
-    taskList.querySelectorAll('li').forEach(li => {
-      tasks.push({ text: li.firstChild.textContent, done: li.classList.contains('completed') });
-    });
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }
 
-  function addTaskToDOM(taskText, done = false) {
+  // Funzione per creare elemento lista
+  function createTaskElement(task, index) {
     const li = document.createElement('li');
-    li.textContent = taskText;
-    if(done) li.classList.add('completed');
+    if(task.done) li.classList.add('completed');
 
-    // Click per completare / non completare
+    // Testo attività
+    const span = document.createElement('span');
+    span.className = 'task-text';
+    span.textContent = task.text;
+    li.appendChild(span);
+
+    // Info categoria e priorità
+    const info = document.createElement('span');
+    info.className = 'task-info';
+    info.textContent = `[${task.category}] Priorità: ${task.priority}`;
+    li.appendChild(info);
+
+    // Click su attività per completare/non completare (toggle)
     li.addEventListener('click', () => {
-      li.classList.toggle('completed');
+      tasks[index].done = !tasks[index].done;
       saveTasks();
+      renderTasks();
     });
 
     // Bottone elimina
     const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Elimina';
     deleteBtn.className = 'deleteBtn';
+    deleteBtn.textContent = 'Elimina';
     deleteBtn.addEventListener('click', e => {
       e.stopPropagation();
-      li.remove();
+      tasks.splice(index, 1);
       saveTasks();
+      renderTasks();
+    });
+    li.appendChild(deleteBtn);
+
+    return li;
+  }
+
+  // Funzione per determinare il quadrante secondo matrice Eisenhower
+  function getQuadrant(task) {
+    const urgent = task.urgency === 'Urgente';
+    const important = task.importance === 'Importante';
+    if (urgent && important) return 'q1';
+    if (!urgent && important) return 'q2';
+    if (urgent && !important) return 'q3';
+    return 'q4';
+  }
+
+  // Renderizza le attività filtrate, ordinate e suddivise in quadranti
+  function renderTasks() {
+    // Pulisce tutti i quadranti
+    ['q1', 'q2', 'q3', 'q4'].forEach(id => {
+      document.getElementById(id).querySelector('ul').innerHTML = '';
     });
 
-    li.appendChild(deleteBtn);
-    taskList.appendChild(li);
-    saveTasks();
+    // Applica filtro categoria e priorità
+    const filtered = tasks.filter(task => {
+      const catMatch = filterCategory.value === 'Tutte' || task.category === filterCategory.value;
+      const priMatch = filterPriority.value === 'Tutte' || task.priority === filterPriority.value;
+      return catMatch && priMatch;
+    });
+
+    // Ordina per priorità: Alta > Media > Bassa
+    filtered.sort((a, b) => priorities.indexOf(a.priority) - priorities.indexOf(b.priority));
+
+    // Aggiunge elementi a quadranti appropriati
+    filtered.forEach((task, i) => {
+      const quadrantId = getQuadrant(task);
+      const ul = document.getElementById(quadrantId).querySelector('ul');
+      ul.appendChild(createTaskElement(task, tasks.indexOf(task)));
+    });
   }
 
   addBtn.addEventListener('click', () => {
-    const taskText = newTaskInput.value.trim();
-    if(taskText) {
-      addTaskToDOM(taskText);
-      newTaskInput.value = '';
-    }
+    const text = newTaskInput.value.trim();
+    if (!text) return alert('Inserisci un\'attività valida');
+
+    const category = document.getElementById('newCategory').value;
+    const priority = document.getElementById('newPriority').value;
+    const urgency = document.getElementById('newUrgency').value;
+    const importance = document.getElementById('newImportance').value;
+
+    tasks.push({
+      text,
+      category,
+      priority,
+      urgency,
+      importance,
+      done: false,
+      created: Date.now()
+    });
+
+    saveTasks();
+    newTaskInput.value = '';
+    renderTasks();
   });
 
-  // Permette aggiungere con Invio
-  newTaskInput.addEventListener('keypress', e => {
-    if(e.key === 'Enter') {
-      addBtn.click();
-    }
-  });
+  filterCategory.addEventListener('change', renderTasks);
+  filterPriority.addEventListener('change', renderTasks);
 
-  loadTasks();
+  // Inizializza la lista all'apertura
+  renderTasks();
 </script>
 
 </body>
