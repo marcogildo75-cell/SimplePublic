@@ -30,7 +30,7 @@
     resultDiv.innerHTML = 'Caricamento dati...';
 
     try {
-      // 1. Geocoding: Convertiamo nome in lat, lon con Nominatim
+      // Geocoding con Nominatim
       const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`);
       const geoData = await geoRes.json();
       if (!geoData.length) throw new Error("Posizione non trovata");
@@ -38,31 +38,27 @@
       const lat = geoData[0].lat;
       const lon = geoData[0].lon;
 
-      // 2. Ottenere i dati meteo con Open-Meteo (orari per oggi)
-      // Parametri richiesti: temperatura, umidità, velocità vento, direzione vento, nuvole, radiazione solare
+      // Richiesta dati meteo Open-Meteo
       const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,windspeed_10m,winddirection_10m,cloudcover,surface_solar_radiation&timezone=auto`);
       const weatherData = await weatherRes.json();
 
-      // Otteniamo ora locale dal timezone automatico restituito
+      // Verifica che i dati orari siano presenti
+      if (!weatherData.hourly || !weatherData.hourly.time) {
+        throw new Error("Dati meteo orari non disponibili");
+      }
+
       const timezone = weatherData.timezone;
 
-      // Ora attuale per il posto: nuova Date basata su timezone per visualizzazione
       const now = new Date();
-      const localTimeOptions = { timeZone: timezone, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-      const localTimeStr = now.toLocaleTimeString('it-IT', localTimeOptions);
+      const localTimeStr = now.toLocaleTimeString('it-IT', { timeZone: timezone, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-      // Troviamo l'ora corrente nel dataset (l'array hourly.time è una serie di orari ISO string)
       const times = weatherData.hourly.time;
       const indexNow = times.findIndex(t => {
         const d = new Date(t);
-        // Troviamo il primo orario >= ora attuale (approssimativo)
         return d.getTime() >= now.getTime();
       });
-
-      // Se non trovato, prendiamo l'ultimo disponibile
       const idx = indexNow >= 0 ? indexNow : times.length - 1;
 
-      // Estrarre dati meteo alle ore correnti
       const temp = weatherData.hourly.temperature_2m[idx];
       const hum = weatherData.hourly.relative_humidity_2m[idx];
       const windSpeed = weatherData.hourly.windspeed_10m[idx];
@@ -70,16 +66,15 @@
       const cloudCover = weatherData.hourly.cloudcover[idx];
       const solarRad = weatherData.hourly.surface_solar_radiation[idx];
 
-      // Mostriamo tutto in pagina
       resultDiv.innerHTML = `
         <h2>Dati meteo per <em>${location}</em></h2>
         <div class="data-row"><strong>Ora locale:</strong> ${localTimeStr} (${timezone})</div>
-        <div class="data-row"><strong>Temperatura:</strong> ${temp} °C</div>
-        <div class="data-row"><strong>Umidità relativa:</strong> ${hum} %</div>
-        <div class="data-row"><strong>Velocità vento (10m):</strong> ${windSpeed} km/h</div>
-        <div class="data-row"><strong>Direzione vento:</strong> ${windDir} °</div>
-        <div class="data-row"><strong>Copertura nuvolosa:</strong> ${cloudCover} %</div>
-        <div class="data-row"><strong>Radiazione solare:</strong> ${solarRad} W/m²</div>
+        <div class="data-row"><strong>Temperatura:</strong> ${temp ?? 'N/A'} °C</div>
+        <div class="data-row"><strong>Umidità relativa:</strong> ${hum ?? 'N/A'} %</div>
+        <div class="data-row"><strong>Velocità vento (10m):</strong> ${windSpeed ?? 'N/A'} km/h</div>
+        <div class="data-row"><strong>Direzione vento:</strong> ${windDir ?? 'N/A'} °</div>
+        <div class="data-row"><strong>Copertura nuvolosa:</strong> ${cloudCover ?? 'N/A'} %</div>
+        <div class="data-row"><strong>Radiazione solare:</strong> ${solarRad ?? 'N/A'} W/m²</div>
       `;
 
     } catch (error) {
