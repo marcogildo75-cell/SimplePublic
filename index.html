@@ -3,102 +3,143 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Meteo Completo con Open-Meteo</title>
+<title>To-Do List - Esercizio</title>
 <style>
-  body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; text-align: center; }
-  input, button { font-size: 18px; padding: 8px; margin-top: 10px; width: 80%; max-width: 400px; }
-  #result { margin-top: 20px; font-size: 18px; text-align: left; }
-  .data-row { margin: 6px 0; }
+  body {
+    font-family: sans-serif;
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    background: #f5f5f7;
+    color: #333;
+  }
+  h1 {
+    text-align: center;
+    color: #007aff;
+  }
+  #newTask {
+    width: 80%;
+    padding: 12px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  #addBtn {
+    padding: 12px 20px;
+    font-size: 18px;
+    color: white;
+    background-color: #007aff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 5px;
+  }
+  #addBtn:hover {
+    background-color: #005bb5;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+  }
+  li {
+    background: white;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  li.completed {
+    text-decoration: line-through;
+    color: #999;
+  }
+  button.deleteBtn {
+    background: #ff3b30;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  button.deleteBtn:hover {
+    background: #cc2a22;
+  }
 </style>
 </head>
 <body>
 
-<h1>Meteo Completo - Inserisci città o regione</h1>
-<input type="text" id="locationInput" placeholder="Es. Roma, Mas, Toscana" />
-<button onclick="getWeather()">Mostra Meteo</button>
+<h1>To-Do List</h1>
 
-<div id="result"></div>
+<input type="text" id="newTask" placeholder="Aggiungi nuova attività..." />
+<button id="addBtn">Aggiungi</button>
+
+<ul id="taskList"></ul>
 
 <script>
-  async function getWeather() {
-    const location = document.getElementById('locationInput').value.trim();
-    const resultDiv = document.getElementById('result');
-    if (!location) {
-      resultDiv.innerHTML = 'Per favore inserisci un nome di città o regione.';
-      return;
-    }
-    resultDiv.innerHTML = 'Caricamento dati...';
+  const newTaskInput = document.getElementById('newTask');
+  const addBtn = document.getElementById('addBtn');
+  const taskList = document.getElementById('taskList');
 
-    try {
-      // Geocoding con Nominatim
-      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`);
-      const geoData = await geoRes.json();
-      if (!geoData.length) throw new Error("Posizione non trovata");
-
-      const lat = geoData[0].lat;
-      const lon = geoData[0].lon;
-
-      // Prima richiesta API dati orari
-      const urlHourly = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,windspeed_10m,winddirection_10m,cloudcover,surface_solar_radiation&timezone=auto`;
-      const weatherRes = await fetch(urlHourly);
-      const weatherData = await weatherRes.json();
-      console.log(weatherData);
-
-      if (weatherData.hourly && weatherData.hourly.time) {
-        // Se dati orari disponibili, usiamo quelli
-        const timezone = weatherData.timezone;
-        const now = new Date();
-        const localTimeStr = now.toLocaleTimeString('it-IT', { timeZone: timezone, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-        const times = weatherData.hourly.time;
-        const indexNow = times.findIndex(t => new Date(t).getTime() >= now.getTime());
-        const idx = indexNow >= 0 ? indexNow : times.length - 1;
-
-        const temp = weatherData.hourly.temperature_2m[idx];
-        const hum = weatherData.hourly.relative_humidity_2m[idx];
-        const windSpeed = weatherData.hourly.windspeed_10m[idx];
-        const windDir = weatherData.hourly.winddirection_10m[idx];
-        const cloudCover = weatherData.hourly.cloudcover[idx];
-        const solarRad = weatherData.hourly.surface_solar_radiation[idx];
-
-        resultDiv.innerHTML = `
-          <h2>Dati meteo per <em>${location}</em> (ora attuale)</h2>
-          <div class="data-row"><strong>Ora locale:</strong> ${localTimeStr} (${timezone})</div>
-          <div class="data-row"><strong>Temperatura:</strong> ${temp ?? 'N/A'} °C</div>
-          <div class="data-row"><strong>Umidità relativa:</strong> ${hum ?? 'N/A'} %</div>
-          <div class="data-row"><strong>Velocità vento (10m):</strong> ${windSpeed ?? 'N/A'} km/h</div>
-          <div class="data-row"><strong>Direzione vento:</strong> ${windDir ?? 'N/A'} °</div>
-          <div class="data-row"><strong>Copertura nuvolosa:</strong> ${cloudCover ?? 'N/A'} %</div>
-          <div class="data-row"><strong>Radiazione solare:</strong> ${solarRad ?? 'N/A'} W/m²</div>
-        `;
-      } else if (weatherData.daily && weatherData.daily.time) {
-        // Se dati orari non disponibili, fallback a dati giornalieri
-        const timezone = weatherData.timezone || 'unknown';
-        const todayIndex = 0; // Il primo giorno è oggi
-
-        const tempMax = weatherData.daily.temperature_2m_max ? weatherData.daily.temperature_2m_max[todayIndex] : 'N/A';
-        const tempMin = weatherData.daily.temperature_2m_min ? weatherData.daily.temperature_2m_min[todayIndex] : 'N/A';
-        const humAvg = weatherData.daily.relative_humidity_2m_max ? weatherData.daily.relative_humidity_2m_max[todayIndex] : 'N/A';
-        const cloudCoverAvg = weatherData.daily.cloudcover_mean ? weatherData.daily.cloudcover_mean[todayIndex] : 'N/A';
-
-        resultDiv.innerHTML = `
-          <h2>Dati meteo giornalieri per <em>${location}</em></h2>
-          <div class="data-row"><strong>Data:</strong> ${weatherData.daily.time[todayIndex]}</div>
-          <div class="data-row"><strong>Temperatura max:</strong> ${tempMax} °C</div>
-          <div class="data-row"><strong>Temperatura min:</strong> ${tempMin} °C</div>
-          <div class="data-row"><strong>Umidità max stimata:</strong> ${humAvg} %</div>
-          <div class="data-row"><strong>Copertura nuvolosa media:</strong> ${cloudCoverAvg} %</div>
-          <div class="data-row" style="color: orange;"><em>Dati orari non disponibili, mostrati dati giornalieri.</em></div>
-        `;
-      } else {
-        throw new Error(weatherData);
-        throw new Error("Dati meteo non disponibili");
-      }
-
-    } catch (error) {
-      resultDiv.innerHTML = `<p style="color: red;">Errore: ${error.message}</p>`;
-    }
+  // Carica attività da localStorage
+  function loadTasks() {
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks.forEach(task => addTaskToDOM(task.text, task.done));
   }
+
+  // Salva tutte le attività
+  function saveTasks() {
+    const tasks = [];
+    taskList.querySelectorAll('li').forEach(li => {
+      tasks.push({ text: li.firstChild.textContent, done: li.classList.contains('completed') });
+    });
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }
+
+  function addTaskToDOM(taskText, done = false) {
+    const li = document.createElement('li');
+    li.textContent = taskText;
+    if(done) li.classList.add('completed');
+
+    // Click per completare / non completare
+    li.addEventListener('click', () => {
+      li.classList.toggle('completed');
+      saveTasks();
+    });
+
+    // Bottone elimina
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Elimina';
+    deleteBtn.className = 'deleteBtn';
+    deleteBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      li.remove();
+      saveTasks();
+    });
+
+    li.appendChild(deleteBtn);
+    taskList.appendChild(li);
+    saveTasks();
+  }
+
+  addBtn.addEventListener('click', () => {
+    const taskText = newTaskInput.value.trim();
+    if(taskText) {
+      addTaskToDOM(taskText);
+      newTaskInput.value = '';
+    }
+  });
+
+  // Permette aggiungere con Invio
+  newTaskInput.addEventListener('keypress', e => {
+    if(e.key === 'Enter') {
+      addBtn.click();
+    }
+  });
+
+  loadTasks();
 </script>
 
 </body>
