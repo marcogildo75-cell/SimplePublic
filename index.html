@@ -3,176 +3,272 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>To-Do List con Matrice di Eisenhower</title>
+<title>To-Do List con Matrice di Eisenhower Colorata</title>
 <style>
   body {
-    font-family: sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     max-width: 900px;
     margin: auto;
     padding: 20px;
-    background: #f5f5f7;
-    color: #333;
+    background: #f0f4f8;
+    color: #222;
   }
-  h1, h2 {
+  h1 {
     text-align: center;
-    color: #007aff;
+    color: #0055cc;
+    margin-bottom: 10px;
   }
   .input-row {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 12px;
+    margin-bottom: 20px;
   }
   input[type=text], select {
     padding: 10px;
     font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    min-width: 150px;
+    border: 1.5px solid #ccc;
+    border-radius: 8px;
+    min-width: 140px;
+    transition: border-color 0.3s ease;
+  }
+  input[type=text]:focus, select:focus {
+    border-color: #0055cc;
+    outline: none;
   }
   button {
-    padding: 10px 18px;
+    padding: 10px 20px;
     font-size: 16px;
     color: white;
-    background-color: #007aff;
+    background-color: #0055cc;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.3s ease;
   }
   button:hover {
-    background-color: #005bb5;
+    background-color: #003d99;
   }
   #filter-row {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
   }
-  select#filterCategory, select#filterPriority {
-    margin: 0 10px;
+  select#filterCategory {
+    margin-left: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
   }
+  .legend {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    user-select: none;
+  }
+  .color-box {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    margin-right: 6px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  }
+
+  /* Colori categorie */
+  .cat-Personale { background-color: #4caf50; } /* Verde */
+  .cat-Famiglia { background-color: #ff9800; }  /* Arancio */
+  .cat-Lavoro { background-color: #2196f3; }    /* Blu */
+  .cat-Salute { background-color: #e91e63; }    /* Rosa */
+  .cat-Finanze { background-color: #9c27b0; }   /* Viola */
+
+  /* Matrice */
   .matrix {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
     margin-top: 20px;
   }
   .quadrant {
     background: white;
-    padding: 10px 15px;
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    min-height: 200px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
   }
   .quadrant h3 {
-    margin-top: 0;
-    color: #007aff;
-    border-bottom: 2px solid #007aff;
-    padding-bottom: 5px;
+    background-color: #0055cc;
+    color: white;
+    margin: 0;
+    padding: 12px 20px;
+    font-size: 18px;
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+    box-shadow: inset 0 -3px 8px rgba(0,0,0,0.3);
   }
+
   ul {
     list-style: none;
-    padding: 0;
+    padding: 15px 20px;
+    margin: 0;
+    overflow-y: auto;
+    flex-grow: 1;
   }
   li {
-    padding: 8px 10px;
-    margin-bottom: 8px;
-    border-radius: 6px;
+    background: #f9faff;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border-radius: 8px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     cursor: pointer;
+    transition: background-color 0.25s ease;
+  }
+  li:hover {
+    background-color: #e0ebff;
   }
   li.completed {
     text-decoration: line-through;
     color: #999;
+    background-color: #ddd;
+    cursor: default;
   }
-  li span.task-text {
+  .color-indicator {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-right: 12px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.15);
+  }
+  .task-text {
     flex-grow: 1;
+    font-size: 16px;
   }
   .task-info {
     font-size: 12px;
     color: #555;
-    margin-left: 8px;
+    margin-left: 10px;
+    white-space: nowrap;
   }
   button.deleteBtn {
     background: #ff3b30;
     color: white;
     border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
+    border-radius: 6px;
+    padding: 6px 10px;
     cursor: pointer;
-    margin-left: 10px;
+    margin-left: 15px;
     flex-shrink: 0;
+    transition: background-color 0.2s ease;
   }
   button.deleteBtn:hover {
-    background: #cc2a22;
+    background-color: #cc2a22;
+  }
+
+  /* Scroll bar personalizzata */
+  ul::-webkit-scrollbar {
+    width: 8px;
+  }
+  ul::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  ul::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  ul::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .input-row {
+      flex-direction: column;
+      align-items: center;
+    }
+    input[type=text], select, button {
+      width: 90%;
+      max-width: 300px;
+      margin-bottom: 10px;
+    }
   }
 </style>
 </head>
 <body>
 
-<h1>To-Do List</h1>t
+<h1>To-Do List Avanzata</h1>
 
 <div class="input-row">
-  <input type="text" id="newTask" placeholder="Aggiungi nuova attività..." />
-  <select id="newCategory" title="Categoria">
+  <input type="text" id="newTask" placeholder="Aggiungi nuova attività..." aria-label="Nuova attività" />
+
+  <select id="newCategory" title="Categoria" aria-label="Categoria">
     <option value="Personale">Personale</option>
+    <option value="Famiglia">Famiglia</option>
     <option value="Lavoro">Lavoro</option>
-    <option value="Studio">Studio</option>
-    <option value="Altro">Altro</option>
+    <option value="Salute">Salute</option>
+    <option value="Finanze">Finanze</option>
   </select>
-  <select id="newPriority" title="Priorità">
-    <option value="Alta">Alta</option>
-    <option value="Media" selected>Media</option>
-    <option value="Bassa">Bassa</option>
-  </select>
-  <select id="newUrgency" title="Urgenza">
+
+  <select id="newUrgency" title="Urgenza" aria-label="Urgenza">
     <option value="Urgente">Urgente</option>
     <option value="Non urgente" selected>Non urgente</option>
   </select>
-  <select id="newImportance" title="Importanza">
+  
+  <select id="newImportance" title="Importanza" aria-label="Importanza">
     <option value="Importante">Importante</option>
     <option value="Non importante" selected>Non importante</option>
   </select>
-  <button id="addBtn">Aggiungi</button>
+
+  <button id="addBtn" aria-label="Aggiungi attività">Aggiungi</button>
 </div>
 
 <div id="filter-row">
-  <label>Filtra per categoria:
-    <select id="filterCategory">
-      <option value="Tutte">Tutte</option>
-      <option value="Personale">Personale</option>
-      <option value="Lavoro">Lavoro</option>
-      <option value="Studio">Studio</option>
-      <option value="Altro">Altro</option>
-    </select>
-  </label>
-  <label>Filtra per priorità:
-    <select id="filterPriority">
-      <option value="Tutte">Tutte</option>
-      <option value="Alta">Alta</option>
-      <option value="Media">Media</option>
-      <option value="Bassa">Bassa</option>
-    </select>
-  </label>
+  <label for="filterCategory">Filtra per categoria:</label>
+  <select id="filterCategory" aria-label="Filtra per categoria">
+    <option value="Tutte">Tutte</option>
+    <option value="Personale">Personale</option>
+    <option value="Famiglia">Famiglia</option>
+    <option value="Lavoro">Lavoro</option>
+    <option value="Salute">Salute</option>
+    <option value="Finanze">Finanze</option>
+  </select>
 </div>
 
-<div class="matrix">
-  <div class="quadrant" id="q1">
-    <h3>Urgente & Importante</h3>
+<div class="legend" aria-label="Legenda categorie">
+  <div class="legend-item"><span class="color-box cat-Personale"></span>Personale</div>
+  <div class="legend-item"><span class="color-box cat-Famiglia"></span>Famiglia</div>
+  <div class="legend-item"><span class="color-box cat-Lavoro"></span>Lavoro</div>
+  <div class="legend-item"><span class="color-box cat-Salute"></span>Salute</div>
+  <div class="legend-item"><span class="color-box cat-Finanze"></span>Finanze</div>
+</div>
+
+<div class="matrix" role="region" aria-label="Matrice di Eisenhower">
+  <div class="quadrant" id="q1" aria-labelledby="q1-title" tabindex="0" role="region">
+    <h3 id="q1-title">Urgente & Importante</h3>
     <ul></ul>
   </div>
-  <div class="quadrant" id="q2">
-    <h3>Non Urgente & Importante</h3>
+  <div class="quadrant" id="q2" aria-labelledby="q2-title" tabindex="0" role="region">
+    <h3 id="q2-title">Non Urgente & Importante</h3>
     <ul></ul>
   </div>
-  <div class="quadrant" id="q3">
-    <h3>Urgente & Non Importante</h3>
+  <div class="quadrant" id="q3" aria-labelledby="q3-title" tabindex="0" role="region">
+    <h3 id="q3-title">Urgente & Non Importante</h3>
     <ul></ul>
   </div>
-  <div class="quadrant" id="q4">
-    <h3>Non Urgente & Non Importante</h3>
+  <div class="quadrant" id="q4" aria-labelledby="q4-title" tabindex="0" role="region">
+    <h3 id="q4-title">Non Urgente & Non Importante</h3>
     <ul></ul>
   </div>
 </div>
@@ -181,23 +277,22 @@
   const newTaskInput = document.getElementById('newTask');
   const addBtn = document.getElementById('addBtn');
   const filterCategory = document.getElementById('filterCategory');
-  const filterPriority = document.getElementById('filterPriority');
 
-  const categories = ['Personale', 'Lavoro', 'Studio', 'Altro'];
-  const priorities = ['Alta', 'Media', 'Bassa'];
-
-  // Carica attività da localStorage o inizializza lista
   let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
-  // Salva attività su localStorage
   function saveTasks() {
     localStorage.setItem('tasks', JSON.stringify(tasks));
   }
 
-  // Funzione per creare elemento lista
   function createTaskElement(task, index) {
     const li = document.createElement('li');
-    if(task.done) li.classList.add('completed');
+    if (task.done) li.classList.add('completed');
+
+    // Indicatore colore categoria
+    const colorInd = document.createElement('span');
+    colorInd.className = 'color-indicator cat-' + task.category.replace(/\s+/g, '');
+    colorInd.title = task.category;
+    li.appendChild(colorInd);
 
     // Testo attività
     const span = document.createElement('span');
@@ -205,13 +300,13 @@
     span.textContent = task.text;
     li.appendChild(span);
 
-    // Info categoria e priorità
+    // Categoria info
     const info = document.createElement('span');
     info.className = 'task-info';
-    info.textContent = `[${task.category}] Priorità: ${task.priority}`;
+    info.textContent = `[${task.category}]`;
     li.appendChild(info);
 
-    // Click su attività per completare/non completare (toggle)
+    // Toggle completamento attività
     li.addEventListener('click', () => {
       tasks[index].done = !tasks[index].done;
       saveTasks();
@@ -222,6 +317,7 @@
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'deleteBtn';
     deleteBtn.textContent = 'Elimina';
+    deleteBtn.title = 'Elimina attività';
     deleteBtn.addEventListener('click', e => {
       e.stopPropagation();
       tasks.splice(index, 1);
@@ -233,7 +329,6 @@
     return li;
   }
 
-  // Funzione per determinare il quadrante secondo matrice Eisenhower
   function getQuadrant(task) {
     const urgent = task.urgency === 'Urgente';
     const important = task.importance === 'Importante';
@@ -243,25 +338,16 @@
     return 'q4';
   }
 
-  // Renderizza le attività filtrate, ordinate e suddivise in quadranti
   function renderTasks() {
-    // Pulisce tutti i quadranti
-    ['q1', 'q2', 'q3', 'q4'].forEach(id => {
+    ['q1','q2','q3','q4'].forEach(id => {
       document.getElementById(id).querySelector('ul').innerHTML = '';
     });
 
-    // Applica filtro categoria e priorità
-    const filtered = tasks.filter(task => {
-      const catMatch = filterCategory.value === 'Tutte' || task.category === filterCategory.value;
-      const priMatch = filterPriority.value === 'Tutte' || task.priority === filterPriority.value;
-      return catMatch && priMatch;
-    });
+    const filtered = tasks.filter(task => 
+      filterCategory.value === 'Tutte' || task.category === filterCategory.value
+    );
 
-    // Ordina per priorità: Alta > Media > Bassa
-    filtered.sort((a, b) => priorities.indexOf(a.priority) - priorities.indexOf(b.priority));
-
-    // Aggiunge elementi a quadranti appropriati
-    filtered.forEach((task, i) => {
+    filtered.forEach(task => {
       const quadrantId = getQuadrant(task);
       const ul = document.getElementById(quadrantId).querySelector('ul');
       ul.appendChild(createTaskElement(task, tasks.indexOf(task)));
@@ -273,14 +359,12 @@
     if (!text) return alert('Inserisci un\'attività valida');
 
     const category = document.getElementById('newCategory').value;
-    const priority = document.getElementById('newPriority').value;
     const urgency = document.getElementById('newUrgency').value;
     const importance = document.getElementById('newImportance').value;
 
     tasks.push({
       text,
       category,
-      priority,
       urgency,
       importance,
       done: false,
@@ -293,9 +377,7 @@
   });
 
   filterCategory.addEventListener('change', renderTasks);
-  filterPriority.addEventListener('change', renderTasks);
 
-  // Inizializza la lista all'apertura
   renderTasks();
 </script>
 
