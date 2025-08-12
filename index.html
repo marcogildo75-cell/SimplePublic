@@ -14,7 +14,7 @@
 <body>
 
 <h1>Meteo Completo - Inserisci città o regione</h1>
-<input type="text" id="locationInput" placeholder="Es. Roma, Massa, Toscana" />
+<input type="text" id="locationInput" placeholder="Es. Roma, Mass, Toscana" />
 <button onclick="getWeather()">Mostra Meteo</button>
 
 <div id="result"></div>
@@ -42,6 +42,7 @@
       const urlHourly = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,windspeed_10m,winddirection_10m,cloudcover,surface_solar_radiation&timezone=auto`;
       const weatherRes = await fetch(urlHourly);
       const weatherData = await weatherRes.json();
+      console.log(weatherData);
 
       if (weatherData.hourly && weatherData.hourly.time) {
         // Se dati orari disponibili, usiamo quelli
